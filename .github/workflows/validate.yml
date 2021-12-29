@@ -13,11 +13,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: list
+      run: ls -l
     - name: Build the site
       uses: helaili/jekyll-action@v2
       with:
         build_only: true
-        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: list
+      run: ls -l
 
     - name: HTML5 Validator
       uses: Cyb3r-Jak3/html5validator-action@v7.0.0
