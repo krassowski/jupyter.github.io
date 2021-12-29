@@ -1,4 +1,4 @@
-name: Validate HTML in Jekyll output
+name: Test website
 
 on:
   push:
@@ -70,6 +70,9 @@ jobs:
         name: Built site ${{ github.run_number }}
         path: ./_site
 
+    - name: Copy assets
+      run: cp -r assets _site/assets
+
     # TODO: we are not checking absolute links as pytest plugins does not support them
     - name: Check links
       run: |
@@ -90,7 +93,7 @@ jobs:
         with:
           name: Built site ${{ github.run_number }}
           path: ./_site
-      - name: Audit URLs using Lighthouse
+      - name: Audit with Lighthouse
         uses: treosh/lighthouse-ci-action@v8
         with:
           configPath: ".github/workflows/lighthouserc.json"
