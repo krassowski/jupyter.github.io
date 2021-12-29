@@ -42,6 +42,10 @@ jobs:
         name: Built site ${{ github.run_number }}
         path: ./_site
 
+    # just to satisfy the `Cyb3r-Jak3/html5validator-action` action
+    - name: Create dummy git repository
+      run: git init
+
     - name: HTML5 Validator
       uses: Cyb3r-Jak3/html5validator-action@v7.0.0
       with:
