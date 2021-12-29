@@ -5,6 +5,11 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -23,11 +28,12 @@ jobs:
     - name: List result of Jekyll build
       run: ls _site/ -l
 
-    - name: Publish builds
+    - name: Publish built site
       uses: actions/upload-artifact@v2
       with:
         name: Built site ${{ github.run_number }}
         path: ./_site
+        if-no-files-found: error
 
   validate:
 
@@ -64,7 +70,29 @@ jobs:
         name: Built site ${{ github.run_number }}
         path: ./_site
 
+    # TODO: we are not checking absolute links as pytest plugins does not support them
     - name: Check links
       run: |
         pip install pytest-check-links
-        pytest _site/ --check-links
+        pytest _site/ --check-links --check-links-ignore "https://.*linkedin.com/.*" --check-links-ignore "/"
+
+  lighthouse:
+
+    runs-on: ubuntu-latest
+    name: Check quality with Lighthouse
+    needs: [build]
+
+    steps:
+      - name: Fetch repository
+        uses: actions/checkout@v2
+      - name: Fetch built site
+        uses: actions/download-artifact@v2
+        with:
+          name: Built site ${{ github.run_number }}
+          path: ./_site
+      - name: Audit URLs using Lighthouse
+        uses: treosh/lighthouse-ci-action@v8
+        with:
+          configPath: ".github/workflows/lighthouserc.json"
+          temporaryPublicStorage: true
+          uploadArtifacts: true
